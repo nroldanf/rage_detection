@@ -11,8 +11,8 @@ import scipy.signal as sig
 # In[] Plotting signal and DFT Magnitude
 raw =  np.genfromtxt('ECG_2.csv', delimiter=',')
 ecg_sig = raw[2:,1]
-#ecg_sig = ecg_sig - np.mean(ecg_sig)# Removing DC level
 
+# Fourier Spectrum
 fs = 500# Sampling frequency
 t = np.arange(0.0,len(ecg_sig)/fs,(1/fs))
 fou = np.abs( np.fft.fft(ecg_sig) )
@@ -20,7 +20,18 @@ fou = np.abs( np.fft.fft(ecg_sig) )
 fou = fou[0:int(len(fou)/2)]
 f = np.linspace(0,fs/2,len(fou))# Frequency vector
 
-#Plotting both
+# Frequency spectrum by Periodogram with Welch's Method
+fwelch, pxx = sig.welch(ecg_sig, fs=fs, window='blackman', nperseg=1024, noverlap=None, nfft=None, 
+      detrend='constant', return_onesided=True, scaling='density', axis=-1)
+
+plt.figure()
+plt.grid('on')
+plt.semilogy(fwelch, pxx)
+plt.xlabel('frequency [Hz]')
+plt.ylabel('PSD [V**2/Hz]')
+plt.show()
+
+# 
 plt.figure()
 ax1 = plt.subplot(2,1,1)
 plt.plot(t,ecg_sig)
@@ -328,14 +339,14 @@ plt.plot(t,sig_filt4);
 plt.title('Elevada al cuadrado');
 
 
-N=30
+N=20
 Y_VenMovil = sig_filt4
 Y_Int = []
 for i in range(0,len(Y_VenMovil)):
     suma = 0
-    for n in range(0,N):
-            if i > (N-n):
-                suma += Y_VenMovil[i -(N-n)]
+    for n in range(1,N):
+        if i > (N-n):
+            suma += Y_VenMovil[i -(N-n)]
     Y_Int.append(suma)
 Y_Int = np.array(Y_Int)*(1/N)
 
@@ -365,6 +376,49 @@ plt.show()
 #figure;
 #plot(t(1:5*fs),Yfin);
 
+# In[] Derivative method
+# y0
+b0 = np.array([1,0,-1])
+b1 = np.array([1,0,-2,0,1])
+b2 = np.array([2.4,0,-3.5,0,1.1])
+MA = np.array([0.5,0,-0.5])
+
+w1, h1 = sig.freqz(b0,1)
+# Conversion from rad/sample to Hz
+w_hz1 = (w1*fs)/(2*np.pi)
+plt.figure()
+plt.plot(w_hz1, 20 * np.log10(abs(h1)), 'b')
+
+
+w2, h2 = sig.freqz(b1,1)
+# Conversion from rad/sample to Hz
+w_hz2 = (w2*fs)/(2*np.pi)
+plt.figure()
+plt.plot(w_hz2, 20 * np.log10(abs(h2)), 'b')
+
+
+w3, h3 = sig.freqz(b2,1)
+# Conversion from rad/sample to Hz
+w_hz3 = (w3*fs)/(2*np.pi)
+plt.figure()
+plt.plot(w_hz3, 20 * np.log10(abs(h3)), 'b')
+
+w4, h4 = sig.freqz(MA,1)
+# Conversion from rad/sample to Hz
+w_hz4 = (w4*fs)/(2*np.pi)
+plt.figure()
+plt.plot(w_hz4, 20 * np.log10(abs(h4)), 'b')
+
+
+ecg_filt = sig.lfilter(b2,1,ecg_sig)
+ecg_filt2 = sig.lfilter(MA,1,ecg_filt)
+
+plt.figure()
+ax1 = plt.subplot(2,1,1)
+plt.plot(t,ecg_filt)
+ax1 = plt.subplot(2,1,2)
+plt.plot(t,ecg_filt2)
+plt.show()
 
 
 
