@@ -39,24 +39,25 @@ plotting(1,fs,250,300,0,50,XD)
 close all;
 sig = load('chb01_01_edfm.mat');sig = sig.val;
 fs = 256;
-wave = 'db4';
+wave = 'dmey';% segÃºn la literatura el sym9 es una buena op
 bands = {'Noise','Gamma','Beta','Alpha','Thetha','Delta'};
 % Decomposition
-[c0,l0] = wavedec(seg,5,wave);
-D = zeros(5,length(seg));
+[c0,l0] = wavedec(sig,6,wave);
+D = zeros(6,length(sig));
 A = [];
 % Reconstruction and plotting (time and frequency)
-for i = 1:5
-    if i == 5
+for i = 1:6
+    if i == 6
         A = wrcoef('a',c0,l0,wave,i);
-%         plotting(1,fs,0,100,0,fs/2,A,bands{i})
+        plotting(1,fs,0,100,0,fs/2,A,bands{i})
     else
         D(i,:) = wrcoef('d',c0,l0,wave,i);
-%         plotting(1,fs,0,100,0,fs/2,D(i,:),bands{i})
+        plotting(1,fs,0,100,0,fs/2,D(i,:),bands{i})
     end
 end
 
-D(5,:) = A;
+D(6,:) = A;
+
 %% HRV filtering
 
 
@@ -87,12 +88,12 @@ for k = 1:win/2:(len - (win/2+1))
 %     FD(ind) = hfd(eeg_sig(1,k:k+win/2+1));
     ind = ind+1;
 end
-%% PSD por método de Welch
+%% PSD por mÃ©todo de Welch
 %{
-Ventanas acorde a la señal a analizar:
+Ventanas acorde a la seÃ±al a analizar:
     - Anchura Main lobes y side lobes de respuesta en frecuencia
     - Sobrelapado
-    - Número de puntos sobre el que se realiza la fft
+    - NÃºmero de puntos sobre el que se realiza la fft
     - 
 %}
 fs = 41;
