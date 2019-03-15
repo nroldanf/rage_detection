@@ -21,8 +21,8 @@ close all;
 clc;
 [XD,CXD,LXD] = wden(seg,'rigrsure','h','one',3,'db2');
 
-plotting(1,fs,250,300,0,50,seg)
-plotting(1,fs,250,300,0,50,XD)
+plotting(1,fs,0,100,0,50,seg,'ruido')
+plotting(1,fs,0,100,0,50,XD,'sin ruido')
 %% EEG decomposition into bands (Wavelet)
 %{
     Delta (0.5-4 Hz) 
@@ -30,33 +30,57 @@ plotting(1,fs,250,300,0,50,XD)
     Alpha (8-14 Hz)
     Beta (14-35 Hz)
     Gamma (25-100 Hz)
+    Noise ()
     
     Tasks:
-    - Determine the ideal wavelet mother for EEG
+    - Determine the ideal wavelet mother for EEG (Cross-corelation with
+    the mother wavelet and decomposition and reconstruction with the
+    smallest error
     - 
 
 %}
 close all;
 sig = load('chb01_01_edfm.mat');sig = sig.val;
 fs = 256;
-wave = 'dmey';% según la literatura el sym9 es una buena op
+wave = 'db4';
 bands = {'Noise','Gamma','Beta','Alpha','Thetha','Delta'};
+thr = [963.6,2211.642,0.013,0.006,0.008];
+
 % Decomposition
-[c0,l0] = wavedec(sig,6,wave);
+[c0,l0] = wavedec(sig,5,wave);
 D = zeros(6,length(sig));
 A = [];
 % Reconstruction and plotting (time and frequency)
-for i = 1:6
-    if i == 6
-        A = wrcoef('a',c0,l0,wave,i);
-        plotting(1,fs,0,100,0,fs/2,A,bands{i})
+for i = 1:5
+    if i == 5
+        D(i,:) = wrcoef('d',c0,l0,wave,i);
+        D(i,:) = wthresh(D(i,:),'s',thr(i));
+        D(i+1,:) = wrcoef('a',c0,l0,wave,i);
     else
         D(i,:) = wrcoef('d',c0,l0,wave,i);
-        plotting(1,fs,0,100,0,fs/2,D(i,:),bands{i})
+        D(i,:) = wthresh(D(i,:),'s',thr(i));
     end
 end
 
-D(6,:) = A;
+
+for i = 1:6
+    plotting(i,fs,0,100,0,fs/2,D,bands{i})
+end
+
+% D(1,:) = zeros();
+sig_fin = zeros();
+for i = 1:6
+    sig_fin = sig_fin+D(i,:);
+end
+
+% Check for perfect reconstruction. 
+err = sig_fin-sig;
+
+plotting(1,fs,0,100,0,fs/2,sig,'Con ruido');
+plotting(1,fs,0,100,0,fs/2,sig_fin,'Sin ruido');
+
+
+% plotting(1,fs,0,100,0,fs/2,A,'apro')
 
 %% HRV filtering
 
