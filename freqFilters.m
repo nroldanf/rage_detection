@@ -3,7 +3,7 @@
 clc;
 fs = 256;fnyq = fs/2;
 order = 80;
-window = hann(order+1);% Hanning el mejor entre blackman, hanning , hamming, hann
+window = hanning(order+1);% Hanning el mejor entre blackman, hanning , hamming, hann
 c = fir1(order,[55 65]/fnyq,'stop',window);
 figure();freqz(c,1,1024,fs);
 %% Variación de la línea de base con IIR (2 etapas) - Pasabandas
