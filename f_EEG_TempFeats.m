@@ -10,17 +10,17 @@
 %       m_sigma: variance of samples
 %       m_sk: skewness of samples
 %       m_kurt: kurtosis
-%       m_act: Hjörth activity
-%       m_mob: Hjörth movility
-%       m_comp: Hjörth complexity
+%       m_act: HjÃ¶rth activity
+%       m_mob: HjÃ¶rth movility
+%       m_comp: HjÃ¶rth complexity
 %       m_FD: fractal dimension
 %
-% Author: Juan Manuel López
+% Author: Juan Manuel LÃ³pez
 % Date: 2018/07
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [m_mu, m_sigma, m_sk, m_kurt, m_act, m_mob, m_comp, m_FD] = ...
-    f_EEG_TempFeats(m_EEG, s_winsize, s_winoverlap)
+function [m_mu, m_sigma, m_sk, m_kurt, m_act, m_mob, m_comp, m_FD,v_label] = ...
+    f_EEG_TempFeats(m_EEG, s_winsize, s_winoverlap,dummy)
 
 s_length = size(m_EEG,1); % data length
 s_chann = size(m_EEG,2); % number of channels
@@ -39,6 +39,7 @@ m_mob = zeros(s_nwins, s_chann);
 m_comp = zeros(s_nwins, s_chann);
 
 m_FD = zeros(s_nwins, s_chann);
+v_label = zeros(s_nwins,1);
 
 % counters init
 s_wincount = 1;
@@ -49,15 +50,21 @@ while(s_wincount <= s_nwins)
     
     % Window movement and extraction
     m_win = m_EEG(s_index:s_index+s_winsize-1,:);
+    v_dummy = dummy(s_index:s_index+s_winsize-1,1);
+    % Verify if the window is at least 80 percent 1 (true)
+    s_true = length( find(v_dummy) );
     
+    if ( (s_true/s_winsize)*100) > 80
+        v_label(s_wincount,1) = 1;
+    end
     %mean, variance, skewness and kurtosis
     m_mu(s_wincount,:) = mean(m_win);
     m_sigma(s_wincount,:) = var(m_win);
     m_sk(s_wincount,:)=skewness(m_win);
     m_kurt(s_wincount,:)=kurtosis(m_win);
    
-    %Hjörth Parameters
-    [v_act, v_mob, v_comp] = f_HjorthFeats(m_win);
+    %HjÃ¶rth Parameters
+    [v_act, v_mob, v_comp] = hjorth(m_win);
     m_act(s_wincount,:) = v_act;
     m_mob(s_wincount,:) = v_mob;
     m_comp(s_wincount,:)=v_comp;
