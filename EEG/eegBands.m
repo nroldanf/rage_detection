@@ -1,16 +1,19 @@
-function [m_delta,m_theta,m_alpha,m_beta,m_gamma,m_noise] = eegBands(m_EEG,fs)
+function [m_delta,m_theta,m_alpha,m_beta,m_gamma,m_noise] = eegBands(m_EEG,wave,fs)
 % EEG decomposition into bands (Wavelet)
+% Function that plots each subband (in time and frequency) given a mother wavelet for 5 levels of decomposition (5 detailed coefficients
+% and 1 aproximation coefficient.)
 %{
-    Delta (0.5-4 Hz) 
-    Theta (4-8 Hz)
-    Alpha (8-14 Hz)
-    Beta (14-35 Hz)
-    Gamma (25-100 Hz)
+    Delta (0-4 Hz) - D1
+    Theta (4-8 Hz) - D2
+    Alpha (8-16 Hz) - D3
+    Beta (16-32 Hz) - D4
+    Gamma (32-64 Hz) - D5
+    High Gamma and noise (64-128 Hz) - A5
 %}
 % Dimensions
-s_chan = size(m_EEG,2);% número de canales
-s_len = size(m_EEG,1);% número de muestras
-% Iniacialización de las matrices
+s_chan = size(m_EEG,2);% nÃºmero de canales
+s_len = size(m_EEG,1);% nÃºmero de muestras
+% IniacializaciÃ³n de las matrices
 m_delta = zeros(s_len,s_chan);
 m_theta = zeros(s_len,s_chan);
 m_alpha = zeros(s_len,s_chan);
@@ -21,7 +24,7 @@ m_noise = zeros(s_len,s_chan);
 t = (0:s_len-1)/fs;
 f = linspace(0,fs/2,length(fftMag(m_EEG(:,1))));
 % Variables de la wavelet
-wave = 'dmey';% Wavelet madre
+%wave = 'dmey';% Wavelet madre
 % bands = {'Noise','Gamma','Beta','Alpha','Thetha','Delta'};% bandas
 bands = {'Ruido','\gamma (25-100 Hz)','\beta (14-35 Hz)','\alpha (8-14 Hz)','\theta (4-8 Hz)','\delta (0.5-4 Hz)'};
 % Decomposition for each channel
