@@ -7,11 +7,11 @@ function eegPCA(m_EEG)
 % Outputs:
 %       m_PCA: Matrix with the most relevant channels.
 %
-% Author: Nicolás Roldán Fajardo
+% Author: NicolÃ¡s RoldÃ¡n Fajardo
 % Date: 2019/03
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-s_chan = size(m_EEG,2);% Número de canales/variables
-s_len = size(m_EEG,1);% Número de muestras/observaciones
+s_chan = size(m_EEG,2);% NÃºmero de canales/variables
+s_len = size(m_EEG,1);% NÃºmero de muestras/observaciones
 % Centrar variables restando la media 
 for chan = 1:s_chan
    m_EEG(:,chan) = m_EEG(:,chan) - mean(m_EEG(:,chan)); 
@@ -31,7 +31,7 @@ for i = 1:s_chan
     pct(i) = sum(eigen(i:s_chan))/total_eigen;
 end
 disp(pct*100);
-% Tome los k canales más significativos
+% Tome los k canales mÃ¡s significativos
 
 
 
