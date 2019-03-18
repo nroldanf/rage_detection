@@ -18,7 +18,7 @@
 %       m_powbeta: relative power beta 12.0 - 30.0 Hz from PSD
 %       m_powlowgamma: relative power low gamma 30.0 - 50 Hz from PSD
 %       m_freqhalfpower: frequency of half power
-% Author: Juan Manuel López
+% Author: Juan Manuel LÃ³pez
 % Date: 2018/07
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
