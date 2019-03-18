@@ -1,4 +1,4 @@
-%% Filtros frecuenciales b·sicos
+%% Filtros frecuenciales b√°sicos
 %% Notch con FIR
 clc;
 fs = 256;fnyq = fs/2;
@@ -6,7 +6,7 @@ order = 80;
 window = hanning(order+1);% Hanning el mejor entre blackman, hanning , hamming, hann
 c = fir1(order,[55 65]/fnyq,'stop',window);
 figure();freqz(c,1,1024,fs);
-%% VariaciÛn de la lÌnea de base con IIR (2 etapas) - Pasabandas
+%% Variaci√≥n de la l√≠nea de base con IIR (2 etapas) - Pasabandas
 n = 16;
 %% Butterworth
 Wp = 30/fnyq ;Ws = 2;Rp = 2;Rs=3;
@@ -21,3 +21,17 @@ Wp = 30/fnyq ;Ws = 2;Rp = 2;Rs=3;
 
 %% Eliptico
 [n,Wp] = ellipord(Wp,Ws,Rp,Rs);
+%% Filtro de peine b√°sico
+function filtered = combFilter(fc,sig)
+%frecuencia fundamental
+wc = zeros();
+for k=1:2:5
+    wc(k) = k*(fc/fs1)*2*pi;
+    wc(k+1) = -k*(fc/fs1)*2*pi;
+end
+z = exp(1i*wc);
+c = poly(z);
+
+filtered = filter(c,1,sig);
+
+end
