@@ -2,21 +2,21 @@ clc;clear;close all;
 %% HRV Principal
 %{
 - Filtros adecuados para ECG
-- Algoritmo de detecci髇 de picos R
-- Interpolaci髇 de la se馻l a una frecuencia determinada (e.g. 1Hz)
-- Extracci髇 de caracteristicas espectrales: Energ韆 del espectro de potencia en VLF(0.01-0.05 Hz), LF(0.05-0.2
-Hz), HF(0.2-0.4 Hz), LF/HF, Entrop韆 del espectro, Detrented Fluctuation,
+- Algoritmo de detecci贸n de picos R
+- Interpolaci贸n de la se帽al a una frecuencia determinada (e.g. 1Hz)
+- Extracci贸n de caracteristicas espectrales: Energ铆a del espectro de potencia en VLF(0.01-0.05 Hz), LF(0.05-0.2
+Hz), HF(0.2-0.4 Hz), LF/HF, Entrop铆a del espectro, Detrented Fluctuation,
 Lyapunov mean and max exponents
 %}
 clc;
 load('100m.mat');
 fs = 360;
 [qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(val,fs,0);
-% Obtenci髇 de la serie de intervalos RR consecutivos
+% Obtenci贸n de la serie de intervalos RR consecutivos
 hrv = diff(qrs_i_raw/fs);
 % Preprocesamiento:Criterio para eliminar intervalos RR anormales 
 %{
-Si se desvia m醩 del 20% con respecto a la media de los intervalos RR
+Si se desvia m谩s del 20% con respecto a la media de los intervalos RR
 anteriores, remuevalo.
 Esto puede eliminar latidos ectopicos que se presenten.
 
@@ -50,7 +50,7 @@ for rr = 1:length(hrv_new)
     sdnn = sdnn + ( (hrv_new(rr) - mean(hrv_new)) )^2;
     if rr < length(hrv_new)-1
         rmssd = rmssd + (hrv_new(rr+1) - hrv_new(rr) )^2 ;
-        %pNN50: aquellos intervalos que difieran de m醩 de 50ms (se puede hacer en segmentos de 2 min minimo)
+        %pNN50: aquellos intervalos que difieran de m谩s de 50ms (se puede hacer en segmentos de 2 min minimo)
         % se han propuesto intevalos de 60 s.
         diff = hrv_new(rr+1) - hrv_new(rr);
         if diff > 0.05
@@ -65,8 +65,8 @@ pNN50 = pNN50/length(hrv_new)*100;
 
 
 % geometricas
-% indice triangular: integral de la funci髇 de densidad de probabilidad dividida por el
-% m醲imo de la distribuci髇. total de NN/numero de intervalos NN en el bin
+% indice triangular: integral de la funci贸n de densidad de probabilidad dividida por el
+% m谩ximo de la distribuci贸n. total de NN/numero de intervalos NN en el bin
 % modal, siendo independiente de la longitud del bin
 % TINN: 
 
@@ -125,7 +125,7 @@ win_over = win_size*0.75;
 n_val = 1024;n_over = 0.75;
 psd_win = hanning(n_val);
 psd_over = length(psd_win)*n_over;
-p = nextpow2(length(val));nfft = 2^p;% n鷐ero de puntos sobre el que calcula la fft
+p = nextpow2(length(val));nfft = 2^p;% n煤mero de puntos sobre el que calcula la fft
 freqLim = [0,1];% rango de frecuencias
 
 [m_totalpower, m_powHF, m_powLF, m_powVLF, m_powULF]...
