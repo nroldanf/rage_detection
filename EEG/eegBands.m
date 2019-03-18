@@ -1,6 +1,7 @@
 function [m_delta,m_theta,m_alpha,m_beta,m_gamma,m_noise] = eegBands(m_EEG,wave,fs)
 % EEG decomposition into bands (Wavelet)
-% Function that plots each subband (in time and frequency) given a mother wavelet for 5 levels of decomposition (5 detailed coefficients
+% Function that return each subband after wavelet decomposition and plots them (in time and frequency) 
+% given a mother wavelet for 5 levels of decomposition (5 detailed coefficients
 % and 1 aproximation coefficient.)
 %{
     Delta (0-4 Hz) - D1
