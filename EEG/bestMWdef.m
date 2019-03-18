@@ -1,5 +1,5 @@
 function xcorr_chan = bestMWdef(m_sig,s_winsize,s_winoverlap)
-% Calcula para cada subabnda la correlación cruzada
+% Calcula para cada subabnda la correlaciÃ³n cruzada
 
 s_chan = size(m_sig,1);
 s_length = size(m_sig,2);
@@ -59,7 +59,7 @@ for fam = 1:6
         end
 
 
-        corr = zeros();% Matriz con la correlación de cada MW
+        corr = zeros();% Matriz con la correlaciÃ³n de cada MW
         % ***Ventaneo***
         while(s_wincount <= s_nwins)
             % Extraiga una ventana para cada canal
@@ -67,7 +67,7 @@ for fam = 1:6
             % Para cada D y A
             for i = 1:6
                 m_win2 = D(i,s_index:s_index+s_winsize-1);
-                % Realice la correlación cruzada
+                % Realice la correlaciÃ³n cruzada
                 R = corrcoef(m_win,m_win2);c = R(2,1);
                 % Concatene
                 corr(i,s_wincount) = c;
