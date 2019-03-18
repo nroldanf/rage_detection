@@ -1,10 +1,14 @@
 clc;clear;close all;
 %% EEG principal
+% En este script se busca realizar todo el preprocesamiento (filtrado), extracci贸n de caracteristicas y validaci贸n de un
+% modelo de Machine learning determinado.
+% Tambi茅n se busca la mejor ventana, n煤mero de puntos, sobrelape, para realizar la PSD de manera adecuada.
+
 %{
-Preprocesamiento: Filtrado con WT y elecci髇 de la mejor WT.
-Reducci髇 de la dimensionalidad: PCA e ICA para escoger los canales.
-Extracci髇 de caracteristicas: Temporales y frecuenciales
-Organizaci髇 de la tabla de entrenamiento
+Preprocesamiento: Filtrado con WT y elecci贸n de la mejor WT.
+Reducci贸n de la dimensionalidad: PCA e ICA para escoger los canales.
+Extracci贸n de caracteristicas: Temporales y frecuenciales
+Organizaci贸n de la tabla de entrenamiento
 Entrenamiento del modelo
 
 %}
@@ -14,30 +18,30 @@ annot = {[766976,777216],[375552,382464],[443392, 453632],[259840,272896]};
 for name = 4:4
     load(['chb01_' names{name}]);
     [chan,len] = size(val);
-    % Genere la se馻l de etiqueta
+    % Genere la se帽al de etiqueta
     dummy = zeros(len,1);
     dummy(annot{name}(1):annot{name}(2)-1,1) = 1;
-    %Par醡etros de la se馻l 
+    %Par谩metros de la se帽al 
     fs = 256;
-    % Par醡etros del filtrado wavelet
+    % Par谩metros del filtrado wavelet
     wave = 'dmey';% MW
     thr = [963.6,2211.642,0.013,0.006,0.008];% Umbrales determinados con la toolbox
-    level = 5;% niveles de descomposici髇
-    % Par醡etros de la extracci髇 de caracter韘ticas
+    level = 5;% niveles de descomposici贸n
+    % Par谩metros de la extracci贸n de caracter铆sticas
     win_size = 10*fs;
     win_over = win_size*0.75;
     % Frecuenciales
     n_val = 1024;n_over = 0.75;
     psd_win = hanning(n_val);
     psd_over = length(psd_win)*n_over;
-    p = nextpow2(length(val));nfft = 2^p;% n鷐ero de puntos sobre el que calcula la fft
+    p = nextpow2(length(val));nfft = 2^p;% n煤mero de puntos sobre el que calcula la fft
     freqLim = [0,100];% rango de frecuencias
     % *** Filtrado wavelet***
     m_eeg = WaveletDenoising(val',wave,thr,level,fs,0);
     disp('Acabe de filtrar')
     seg_eeg = m_eeg(annot{name}(1) - 60*fs:annot{name}(2) + 60*fs,:);
     seg_dummy = dummy(annot{name}(1) - 60*fs:annot{name}(2) + 60*fs,:);
-    % *** Extracci髇 de caracteristicas ***
+    % *** Extracci贸n de caracteristicas ***
     bands = {'Ruido','\gamma (25-100 Hz)','\beta (14-35 Hz)','\alpha (8-14 Hz)','\theta (4-8 Hz)','\delta (0.5-4 Hz)'};%Para cada canal
     feats = {'Pot_total', 'delta', 'theta', 'alpha', 'beta', ' low_gamma','Freq_media','Media','STD','Skew','Kurt','Act','Mob','Compl','FD','Class'};
 
@@ -56,7 +60,7 @@ for name = 4:4
         v_labelFin = [v_labelFin; v_label];
     end
 
-    % Colocaci髇 en una tabla
+    % Colocaci贸n en una tabla
     % Matriz de caracteristicas
     m_Feats = zeros(size(m_mu,1) * size(m_mu,2) , length(feats) );
     
@@ -76,11 +80,11 @@ for name = 4:4
     m_Feats(:,14) = m_comp(:);
     m_Feats(:,15) = m_FD(:);
     m_Feats(:,16) = v_labelFin;
-    % Preprocesamiento (imputaci髇, outliers, normalizaci髇/estandarizaci髇)
+    % Preprocesamiento (imputaci贸n, outliers, normalizaci贸n/estandarizaci贸n)
     outliers = isoutlier(m_Feats,'median'); % detecta los outliers
     m_FeatsNoOut = filloutliers(m_Feats, 'clip','mean');% reemplaza los outliers (Clamp method)
     m_FeatsNorm = m_FeatsNoOut;
-    m_FeatsNorm(:,1:end-1) = normalize(m_FeatsNoOut(:,1:end-1),'standarize');% normaliza las variables num閞icas
+    m_FeatsNorm(:,1:end-1) = normalize(m_FeatsNoOut(:,1:end-1),'standarize');% normaliza las variables num茅ricas
     if name == 1
         Tfin = m_FeatsNorm;
     else
@@ -97,7 +101,7 @@ for i = 1:length(feats)
 end
 %% Prediga sobre otros datos
 yfit = trainedModel2.predictFcn(T(4072:end,1:end-1));% Ingrese las variables requeridas
-% Verifique la precisi髇
+% Verifique la precisi贸n
 cont = 0;
 for i = 1:length(yfit)
     if v_labelFin(i,1) == yfit(i,1)
@@ -105,16 +109,16 @@ for i = 1:length(yfit)
     end
 end
 
-%% Prueba PSD para EEG (escogencia de la mejor ventana, sobrelape y n鷐ero de puntos)
+%% Prueba PSD para EEG (escogencia de la mejor ventana, sobrelape y n煤mero de puntos)
 %{
 Tipo de ventana
-- Mainlobe width: Resoluci髇
-- Sidelobe heigth: Rango din醡ico
+- Mainlobe width: Resoluci贸n
+- Sidelobe heigth: Rango din谩mico
 Longitud de la ventana
 - 
 Sobrelape
 - 
-N鷐ero de puntos para la fft
+N煤mero de puntos para la fft
 - 
 
 %}
@@ -161,7 +165,7 @@ end
 %% PCA
 %{
 - Calcular la media de cada variable. Centrar los datos con respecto a dicha media.
-- Calcular la regresi髇 lineal para el conjunto de datos. Se encuentra la
+- Calcular la regresi贸n lineal para el conjunto de datos. Se encuentra la
 linea que minimiza la distancia hasta los puntos o maximizar la distancia
 de las proyecciones de los puntos en la linea hasta el origen.
 - 
