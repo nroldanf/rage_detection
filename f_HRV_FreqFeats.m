@@ -12,14 +12,14 @@
 % Outputs:
 %       m_totalpower: power from PSD (Welch method)
 %       organized by rows for each window, and columns for each channel
-%       m_powdelta: relative power delta 0.5 - 4.0 Hz from PSD
-%       m_powtheta: relative power theta 4.0 - 8.0 Hz from PSD
-%       m_powalpha: relative power alpha 8.0 - 12.0 Hz from PSD
-%       m_powbeta: relative power beta 12.0 - 30.0 Hz from PSD
-%       m_powlowgamma: relative power low gamma 30.0 - 50 Hz from PSD
-%       m_freqhalfpower: frequency of half power
-% Author: Juan Manuel LÛpez / Date: 2018/07
-% Modified: Nicol·s Rold·n Fajardo / Date: 2019/03
+%       m_powHF: relative power 0.15-0.4 Hz from PSD
+%       m_powLF: relative 0.04-0.15 Hz from PSD
+%       m_powVLF: relative 0-0.04 Hz from PSD
+%       m_powULF: relative 0-0.003 Hz from PSD
+%       m_LFHFratio: ratio between LF y HF
+
+% Author: Juan Manuel L√≥pez / Date: 2018/07
+% Modified: Nicol√°s Rold√°n Fajardo / Date: 2019/03
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -41,8 +41,6 @@ m_powLF = zeros(s_nwins, s_chann);
 m_powVLF = zeros(s_nwins, s_chann);
 m_powULF = zeros(s_nwins, s_chann);
 m_LFHFratio = zeros(s_nwins, s_chann);
-% m_powlowgamma = zeros(s_nwins, s_chann);
-% m_freqhalfpower = zeros(s_nwins, s_chann);
 
 % counters init
 s_wincount = 1;
