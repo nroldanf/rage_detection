@@ -4,6 +4,7 @@
 %       m_EEG: Matrix with columns as Channels and rows as samples
 %       s_winsize: window size in samples
 %       s_winoverlap: window overlap in samples
+%       dummy: vector with the labels
 % Outputs:
 %       m_mu: mean of samples organized by rows for each window, and columns
 %       for each channel
@@ -15,8 +16,8 @@
 %       m_comp: Hjörth complexity
 %       m_FD: fractal dimension
 %
-% Author: Juan Manuel López
-% Date: 2018/07
+% Author: Juan Manuel López/ Date: 2018/07
+% Modified: Nicolás Roldán / Date: 2019/03
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [m_mu, m_sigma, m_sk, m_kurt, m_act, m_mob, m_comp, m_FD,v_label] = ...
