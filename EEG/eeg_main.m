@@ -1,14 +1,14 @@
 clc;clear;close all;
 %% EEG principal
-% En este script se busca realizar todo el preprocesamiento (filtrado), extracción de caracteristicas y validación de un
+% En este script se busca realizar todo el preprocesamiento (filtrado), extracciÃ³n de caracteristicas y validaciÃ³n de un
 % modelo de Machine learning determinado.
-% También se busca la mejor ventana, número de puntos, sobrelape, para realizar la PSD de manera adecuada.
+% TambiÃ©n se busca la mejor ventana, nÃºmero de puntos, sobrelape, para realizar la PSD de manera adecuada.
 
 %{
-Preprocesamiento: Filtrado con WT y elección de la mejor WT.
-Reducción de la dimensionalidad: PCA e ICA para escoger los canales.
-Extracción de caracteristicas: Temporales y frecuenciales
-Organización de la tabla de entrenamiento
+Preprocesamiento: Filtrado con WT y elecciÃ³n de la mejor WT.
+ReducciÃ³n de la dimensionalidad: PCA e ICA para escoger los canales.
+ExtracciÃ³n de caracteristicas: Temporales y frecuenciales
+OrganizaciÃ³n de la tabla de entrenamiento
 Entrenamiento del modelo
 
 %}
@@ -18,30 +18,30 @@ annot = {[766976,777216],[375552,382464],[443392, 453632],[259840,272896]};
 for name = 4:4
     load(['chb01_' names{name}]);
     [chan,len] = size(val);
-    % Genere la señal de etiqueta
+    % Genere la seÃ±al de etiqueta
     dummy = zeros(len,1);
     dummy(annot{name}(1):annot{name}(2)-1,1) = 1;
-    %Parámetros de la señal 
+    %ParÃ¡metros de la seÃ±al 
     fs = 256;
-    % Parámetros del filtrado wavelet
+    % ParÃ¡metros del filtrado wavelet
     wave = 'dmey';% MW
     thr = [963.6,2211.642,0.013,0.006,0.008];% Umbrales determinados con la toolbox
-    level = 5;% niveles de descomposición
-    % Parámetros de la extracción de características
+    level = 5;% niveles de descomposiciÃ³n
+    % ParÃ¡metros de la extracciÃ³n de caracterÃ­sticas
     win_size = 10*fs;
     win_over = win_size*0.75;
     % Frecuenciales
     n_val = 1024;n_over = 0.75;
     psd_win = hanning(n_val);
     psd_over = length(psd_win)*n_over;
-    p = nextpow2(length(val));nfft = 2^p;% número de puntos sobre el que calcula la fft
+    p = nextpow2(length(val));nfft = 2^p;% nÃºmero de puntos sobre el que calcula la fft
     freqLim = [0,100];% rango de frecuencias
     % *** Filtrado wavelet***
     m_eeg = WaveletDenoising(val',wave,thr,level,fs,0);
     disp('Acabe de filtrar')
     seg_eeg = m_eeg(annot{name}(1) - 60*fs:annot{name}(2) + 60*fs,:);
     seg_dummy = dummy(annot{name}(1) - 60*fs:annot{name}(2) + 60*fs,:);
-    % *** Extracción de caracteristicas ***
+    % *** ExtracciÃ³n de caracteristicas ***
     bands = {'Ruido','\gamma (25-100 Hz)','\beta (14-35 Hz)','\alpha (8-14 Hz)','\theta (4-8 Hz)','\delta (0.5-4 Hz)'};%Para cada canal
     feats = {'Pot_total', 'delta', 'theta', 'alpha', 'beta', ' low_gamma','Freq_media','Media','STD','Skew','Kurt','Act','Mob','Compl','FD','Class'};
 
@@ -60,7 +60,7 @@ for name = 4:4
         v_labelFin = [v_labelFin; v_label];
     end
 
-    % Colocación en una tabla
+    % ColocaciÃ³n en una tabla
     % Matriz de caracteristicas
     m_Feats = zeros(size(m_mu,1) * size(m_mu,2) , length(feats) );
     
@@ -80,11 +80,11 @@ for name = 4:4
     m_Feats(:,14) = m_comp(:);
     m_Feats(:,15) = m_FD(:);
     m_Feats(:,16) = v_labelFin;
-    % Preprocesamiento (imputación, outliers, normalización/estandarización)
+    % Preprocesamiento (imputaciÃ³n, outliers, normalizaciÃ³n/estandarizaciÃ³n)
     outliers = isoutlier(m_Feats,'median'); % detecta los outliers
     m_FeatsNoOut = filloutliers(m_Feats, 'clip','mean');% reemplaza los outliers (Clamp method)
     m_FeatsNorm = m_FeatsNoOut;
-    m_FeatsNorm(:,1:end-1) = normalize(m_FeatsNoOut(:,1:end-1),'standarize');% normaliza las variables numéricas
+    m_FeatsNorm(:,1:end-1) = normalize(m_FeatsNoOut(:,1:end-1),'standarize');% normaliza las variables numÃ©ricas
     if name == 1
         Tfin = m_FeatsNorm;
     else
@@ -101,7 +101,7 @@ for i = 1:length(feats)
 end
 %% Prediga sobre otros datos
 yfit = trainedModel2.predictFcn(T(4072:end,1:end-1));% Ingrese las variables requeridas
-% Verifique la precisión
+% Verifique la precisiÃ³n
 cont = 0;
 for i = 1:length(yfit)
     if v_labelFin(i,1) == yfit(i,1)
@@ -109,33 +109,34 @@ for i = 1:length(yfit)
     end
 end
 
-%% Prueba PSD para EEG (escogencia de la mejor ventana, sobrelape y número de puntos)
+%% Prueba PSD para EEG (escogencia de la mejor ventana, sobrelape y nÃºmero de puntos)
 %{
 Tipo de ventana
-- Mainlobe width: Resolución
-- Sidelobe heigth: Rango dinámico
+- Mainlobe width: ResoluciÃ³n
+- Sidelobe heigth: Rango dinÃ¡mico
 Longitud de la ventana
 - 
 Sobrelape
 - 
-Número de puntos para la fft
+NÃºmero de puntos para la fft
 - 
 
 %}
 
 clc;clear;close all;
 load('chb01_03_edfm.mat');
+val = val(1,:);
 fs = 256;
 win_types = {'Hanning','Hamming','Hann','Blackmann-Harris','Barlett','Kaiser'};
-
-n_val = [512,1024,2048];
+nx = length(val);
+na = 2.^(0:5);% numero de veces que se promedia el espectro
+n_val = floor(nx./na);
 n_over = [0.25,0.5,0.75];
 
 for i = 1:length(n_val)
-%     n = n_val(i);
-    n = 512;
-    
-    figure('Name',['Ventana de ' num2str(n_over(i)) ],'NumberTitle','off')
+    n = n_val(i);
+%     figure('Name',['Ventana de ' num2str(n_over(i)) ],'NumberTitle','off')
+    figure('Name',['Promedio de ' num2str(na(i)) ],'NumberTitle','off')
     for win = 1:length(win_types)
         switch win
             case 1
@@ -150,10 +151,10 @@ for i = 1:length(n_val)
                 psd_win = kaiser(n);
         end
 
-        psd_over = length(psd_win)*n_over(i);
+        psd_over = length(psd_win)*n_over(1);
         p = nextpow2(length(val));nfft = 2^p;
 
-        [m_Pxx, v_w] = pwelch(val(1,1:400*fs), psd_win,psd_over,nfft,fs);
+        [m_Pxx, v_w] = pwelch(val, psd_win,psd_over,nfft,fs);
         
         subplot(3,2,win);
         plot(v_w,10*log(m_Pxx+1));
@@ -165,7 +166,7 @@ end
 %% PCA
 %{
 - Calcular la media de cada variable. Centrar los datos con respecto a dicha media.
-- Calcular la regresión lineal para el conjunto de datos. Se encuentra la
+- Calcular la regresiÃ³n lineal para el conjunto de datos. Se encuentra la
 linea que minimiza la distancia hasta los puntos o maximizar la distancia
 de las proyecciones de los puntos en la linea hasta el origen.
 - 
