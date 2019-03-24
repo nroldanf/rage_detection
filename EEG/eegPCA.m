@@ -1,4 +1,4 @@
-function eegPCA(m_EEG)
+function m_PCA = eegPCA(m_eeg,op,criteria)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function f_EEG_TempFeats
 % Inputs: 
@@ -10,29 +10,56 @@ function eegPCA(m_EEG)
 % Author: NicolÃ¡s RoldÃ¡n Fajardo
 % Date: 2019/03
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-s_chan = size(m_EEG,2);% NÃºmero de canales/variables
-s_len = size(m_EEG,1);% NÃºmero de muestras/observaciones
-% Centrar variables restando la media 
-for chan = 1:s_chan
-   m_EEG(:,chan) = m_EEG(:,chan) - mean(m_EEG(:,chan)); 
-end
-% Compoenentes principales
-[U,S,pc] = svd(m_EEG,'econ');
-eigen = diag(S).^2;
-for i = 1:s_chan
-   pc(:,i) = pc(:,i)*sqrt(eigen(i)); 
-end
-figure;plot(eigen);
-title('Scree plot');xlabel('N');ylabel('Valores propios');grid 'on';
 
-total_eigen = sum(eigen);
-pct = zeros();
-for i = 1:s_chan
-    pct(i) = sum(eigen(i:s_chan))/total_eigen;
-end
-disp(pct*100);
-% Tome los k canales mÃ¡s significativos
+% PCA mediante la matriz de covarianza
+%{
+1. Hallar matriz de covarianza
+2. Determinar eigenvectores y eigenvalores.
+3. Hallar la varianza que aporta cada variable
+4. Según criteria, obtener los componentes principales más significativos.
+%}
 
+switch op
+    case "covariance"
+        S =  cov(m_eeg);% covarianza entre variables
+        % Obtener eigenvectores y eigenvalores de la matriz de covarianza
+        [eig_vect,eig_val] = eig(S);
+        % Ordenar en orden descendente los eigenvalores y eigenvectores
+        eig_val = sort(diag(eig_val),'descend');
+        eig_vect = fliplr(eig_vect);
+        % Explained variance to choose the most significant components
+        tot = sum(eig_val);
+
+        var_exp = [];
+        c = {};
+        len = length(eig_val);
+        for i = 1:length(eig_val)
+            var_exp(i) = (eig_val(i)/tot)*100; 
+        end
+        cum=cumsum(var_exp);
+
+        figure;
+        bar(var_exp);
+        title("Explained variance by different principal components");
+        ylabel("Explained variance in percent");
+        grid on;
+        hold;
+        plot(cum,'-o');
+        plot(ones(size(var_exp))*criteria,'--')
+
+        % Obtención de la matriz de proyección (concatenación de los primeros eigenv)
+        var = 0;cont=1;
+        mask = zeros();
+        while(var<=criteria)
+            var = var+var_exp(cont);
+            mask(cont) = cont;
+            cont=cont+1;
+        end
+        new_feat = eig_vect(:,mask);
+        % Proyección en el nuevo espacio
+        m_PCA = m_eeg*new_feat;
+       
+end
 
 
 

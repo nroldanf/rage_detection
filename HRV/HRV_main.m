@@ -10,9 +10,10 @@ Lyapunov mean and max exponents
 %}
 clc;
 load('100m.mat');
-fs = 360;% frecuencia de la señal de ECG
-fs_hrv = 1;% frecuencia de interpolación
-t = (0:length(val)-1)/fs;% vector de la señal de ECG
+% *** Caracteristicas de la se�al ***
+fs = 360;
+fs_hrv = 1;
+t = (0:length(val)-1)/fs;
 [qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(val,fs,0);
 v_t = qrs_i_raw/fs;v_test = v_t;
 v_t = v_t(1:end-1);% vector de tiempo de la señal de RR
@@ -20,7 +21,6 @@ v_t = v_t(1:end-1);% vector de tiempo de la señal de RR
 % es decir, cada muestra está ubicada a la mitad del intervalo
 v_thalf = diff(v_test);v_thalf = v_thalf/2;
 v_tshift = v_t+v_thalf;
-% si intento desplazarlo 
 % NOTA:
 %{
 Cada instante donde sucede el RR se toma como el tiempo donde está el
@@ -28,7 +28,7 @@ primer pico RR del intervalo respectivo.
 %}
 %% **** Extracción de la señal de HRV a partir de la señal de ECG *****
 
-hrv = diff(qrs_i_raw/fs);% Obtencion de la serie de intervalos RR consecutivos
+hrv = diff(qrs_i_raw/fs);% Obtencion de la serie de intervalos RR consecutivos ( en segundos)
 % 1. Preprocesamiento:Criterio para eliminar intervalos RR anormales 
 %{
 Si se desvia mÃ¡s del 20% con respecto a la media de los intervalos RR
@@ -58,8 +58,8 @@ end
 % makima es el que mejor se comporta con cubic
 %%
 clc;
-n_over = 0.25;
-nx = length(hrv_int);na = 8;
+n_over = 0;
+nx = length(hrv_int);na = 16;
 psd_win = hanning(floor(nx/na));
 psd_over = round(length(psd_win)*n_over);
 p = nextpow2(length(hrv_int));nfft = 2^p;% nÃºmero de puntos sobre el que calcula la fft
@@ -144,21 +144,38 @@ pNN50 = pNN50/length(hrv_clean)*100;
 
 % histograma: 
 
-
-
 % figure;plot(hrv);
 % figure;plot(hrv_new);
+%%
+% Temporales
+m_HRV = hrv_int;s_winsize = fs*30;s_winoverlap = 0;
+ [v_SDNN,v_RMSSD,v_pNN50] = f_HRV_TempFeats(m_HRV,s_winsize, s_winoverlap);
+ % Frecuenciales
+ 
+
 %% Medidas frecuenciales
-win_size = 10*fs;
-win_over = win_size*0.75;
+clc;
+win_size = 30*fs;
+win_over = 0;
 % Frecuenciales
-n_val = 1024;n_over = 0.75;
-psd_win = hanning(n_val);
-psd_over = length(psd_win)*n_over;
-p = nextpow2(length(val));nfft = 2^p;% nÃºmero de puntos sobre el que calcula la fft
-freqLim = [0,1];% rango de frecuencias
+n_over = 0;
+nx = length(hrv_int);na = 16;
+psd_win = hanning(floor(nx/na));
+psd_over = round(length(psd_win)*n_over);
+p = nextpow2(length(hrv_int));nfft = 2^p;% nÃºmero de puntos sobre el que calcula la fft
+freqLim = [0,0.5];
 
 [m_totalpower, m_powHF, m_powLF, m_powVLF, m_powULF]...
     = ...
-    f_HRV_FreqFeats(ecg',win_size, win_over,...
+    f_HRV_FreqFeats(hrv_int',win_size, win_over,...
                                     psd_win, psd_over,nfft, fs,freqLim);
+                                
+[m_Pxx, v_w] = pwelch(hrv_int',psd_win,psd_over,nfft,fs_hrv);
+figure;
+plot(v_w,10*log(m_Pxx+1));
+title('Ventanta tipo hanning');
+xlabel('Frecuencia (Hz)');ylabel('Potencia (dB/Hz)');
+xlim([0 0.1]);
+grid on;
+
+%%

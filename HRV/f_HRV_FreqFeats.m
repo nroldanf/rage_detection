@@ -46,11 +46,15 @@ m_LFHFratio = zeros(s_nwins, s_chann);
 s_wincount = 1;
 s_index = 1;
 
-
 while(s_wincount <= s_nwins)
     
     % Window movement and extraction
-    m_win = m_HRV(s_index:s_index+s_winsize-1,:);
+    m_win = m_HRV(s_index:s_index+s_winsize-1,1);
+    p = nextpow2(s_length);s_nfft = 2^p;% nÃºmero de puntos sobre el que calcula la fft
+    nx = length(m_win);na = 16;
+    s_psdwinsize = hanning(floor(nx/na));
+    s_psdwinover = 0;
+
     
     [m_Pxx, v_w] = pwelch(m_win, s_psdwinsize,s_psdwinover,s_nfft,s_fs);
 
