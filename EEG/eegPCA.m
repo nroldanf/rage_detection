@@ -7,7 +7,7 @@ function m_PCA = eegPCA(m_eeg,op,criteria)
 % Outputs:
 %       m_PCA: Matrix with the most relevant channels.
 %
-% Author: Nicolás Roldán Fajardo
+% Author: NicolÃ¡s RoldÃ¡n Fajardo
 % Date: 2019/03
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,7 +16,7 @@ function m_PCA = eegPCA(m_eeg,op,criteria)
 1. Hallar matriz de covarianza
 2. Determinar eigenvectores y eigenvalores.
 3. Hallar la varianza que aporta cada variable
-4. Seg�n criteria, obtener los componentes principales m�s significativos.
+4. Según criteria, obtener los componentes principales más significativos.
 %}
 
 switch op
@@ -47,7 +47,7 @@ switch op
         plot(cum,'-o');
         plot(ones(size(var_exp))*criteria,'--')
 
-        % Obtenci�n de la matriz de proyecci�n (concatenaci�n de los primeros eigenv)
+        % Obtención de la matriz de proyección (concatenación de los primeros eigenv)
         var = 0;cont=1;
         mask = zeros();
         while(var<=criteria)
@@ -56,11 +56,14 @@ switch op
             cont=cont+1;
         end
         new_feat = eig_vect(:,mask);
-        % Proyecci�n en el nuevo espacio
+        % Proyección en el nuevo espacio
         m_PCA = m_eeg*new_feat;
        
 end
 
+% PCA: Media=0; Varianza=1;
+% No son un canal en especifico, son una mezcla de todos los canales.
+% Para que no haya bias se deben normalizar, así todas las señales tienen el mismo peso.
 
 
 end
