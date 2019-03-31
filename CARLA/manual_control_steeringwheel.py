@@ -9,7 +9,7 @@
 # documented example, please take a look at tutorial.py.
 
 """
-Welcome to CARLA manual control with steering wheel Logitech G29.
+Welcome to CARLA manual control with steering wheel Logitech G920.
 
 To drive start by preshing the brake pedal.
 Change your wheel_config.ini according to your steering wheel.
@@ -135,17 +135,26 @@ class World(object):
         self.restart()
         self.world.on_tick(hud.on_world_tick)
         
-
+        
+        
+#        self.my_spawn_point = 0
+        
     def restart(self):
         # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager._index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager._transform_index if self.camera_manager is not None else 0
         # Get a random blueprint.
-#        blueprint = random.choice(self.world.get_blueprint_library().filter(self._actor_filter))
+#        blueprint = random.choice(self.world.get_blueprint_library().filter(self._actor_filter))        
         
         #************************Tome solo automoviles de 4 ruedas*************
+        forbidCars = ["police","carlacola"]
         cars = self.world.get_blueprint_library().filter(self._actor_filter)
         cars = [x for x in cars if int(x.get_attribute('number_of_wheels')) == 4]
+        # Remueva los autos que no son adecuados
+        for car in forbidCars:
+            cars = [x for x in cars if car not in x.tags]
+#        for x in cars:
+#            print(x.tags)
         blueprint = random.choice(cars)# elección aleatoria
         #**********************************************************************
         
@@ -161,9 +170,13 @@ class World(object):
             spawn_point.rotation.pitch = 0.0
             self.destroy()
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            
         while self.player is None:
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+            # Guardar el punto en el que se spawnea para retirarlo de la lista general
+#            self.my_spawn_point = spawn_point
+            
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
         # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player, self.hud)
@@ -242,12 +255,14 @@ class DualControl(object):
         self._handbrake_idx = int(
             self._parser.get('G920 Racing Wheel', 'handbrake'))
 
-# Modificación para los cambios
+        # Modificación para los cambios
         self._first_fear_idx = int(self._parser.get('G920 Racing Wheel', 'first_gear'))
         self._second_fear_idx = int(self._parser.get('G920 Racing Wheel', 'second_gear'))
         self._third_fear_idx = int(self._parser.get('G920 Racing Wheel', 'third_gear'))
         self._fourth_fear_idx = int(self._parser.get('G920 Racing Wheel', 'fourth_gear'))
         self._fifth_fear_idx = int(self._parser.get('G920 Racing Wheel', 'fifth_gear'))
+        # Habilite la transmisión manual desde un principio
+        self._control.manual_gear_shift = True
         
         
     def parse_events(self, world, clock):
@@ -264,7 +279,7 @@ class DualControl(object):
                 elif event.button == 3:
                     world.next_weather()
                 elif event.button == self._reverse_idx:
-                    self._control.gear = 1 if self._control.reverse else -1
+                    self._control.gear = 0 if self._control.reverse else -1
                 elif event.button == 23:
                     world.camera_manager.next_sensor()
                     
@@ -311,10 +326,10 @@ class DualControl(object):
                     world.camera_manager.toggle_recording()
                     
                 if isinstance(self._control, carla.VehicleControl):
-                    if event.key == K_q:
-                        self._control.gear = 1 if self._control.reverse else -1
+#                    if event.key == K_q:
+#                        self._control.gear = 1 if self._control.reverse else -1
 
-                    elif event.key == K_m:
+                    if event.key == K_m:
                         self._control.manual_gear_shift = not self._control.manual_gear_shift
                         self._control.gear = world.player.get_control().gear
                         world.hud.notification('%s Transmission' % ('Manual' if self._control.manual_gear_shift else 'Automatic'))
@@ -392,8 +407,6 @@ class DualControl(object):
         self._control.throttle = throttleCmd
 
         #toggle = jsButtons[self._reverse_idx]
-
-
         self._control.hand_brake = bool(jsButtons[self._handbrake_idx])
         
         
@@ -832,6 +845,8 @@ def game_loop(args):
         world = World(client.get_world(), hud, args.filter)
         
         
+        
+        
         # ***************Agregado para vehiculos **************
         blueprints = client.get_world().get_blueprint_library().filter('vehicle.*')
         def try_spawn_random_vehicle_at(transform):
@@ -844,12 +859,15 @@ def game_loop(args):
             if vehicle is not None:
                 actor_list.append(vehicle)
                 vehicle.set_autopilot()
-                print('spawned %r at %s' % (vehicle.type_id, transform.location))
+#                print('spawned %r at %s' % (vehicle.type_id, transform.location))
                 return True
             return False
 
         # @todo Needs to be converted to list to be shuffled.
         spawn_points = list(client.get_world().get_map().get_spawn_points())
+        # ***********Remueva el my spawn point de la lista de posibles puntos****
+#        spawn_points = [x for x in spawn_points if self.my_spawn_point not in spawn_points]
+        
         random.shuffle(spawn_points)
 
         print('found %d spawn points.' % len(spawn_points))
@@ -956,6 +974,8 @@ def main():
     logging.info('listening to server %s:%s', args.host, args.port)
 
     print(__doc__)
+    
+    
 
     try:
 
@@ -974,8 +994,16 @@ if __name__ == '__main__':
 A corregir:
     - Carros se spawnean encima o muy cerca mio
     - Remover los botones de cambio de clima y demás en el volante
-    - Colocar de manera automática (por defecto), la transmisión manual
-    - Tratar de integrar el clutch
-
+    - Colocar de manera automática (por defecto), la transmisión manual (CHECK)
+    - Tratar de integrar el clutch-> problema desde pygame
+    - Limitar la clase de autos que puedo generar para mi (no poli
+    ni camiones) (CHECK)
+    - Comenzar en "primera persona"
+    
+    Maybeee.....
+    - Limitar los hud notification
+    - Comenzar sin notification
+    
+    
 '''
 
