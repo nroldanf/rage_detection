@@ -479,12 +479,17 @@ class HUD(object):
         max_col = max(1.0, max(collision))
         collision = [x / max_col for x in collision]
         vehicles = world.world.get_actors().filter('vehicle.*')
+        traffic_lights = world.world.get_actors().filter('traffic.traffic_light')
+        
         self._info_text = [
             'Server:  % 16.0f FPS' % self.server_fps,
             'Client:  % 16.0f FPS' % clock.get_fps(),
             '',
             'Vehicle: % 20s' % get_actor_display_name(world.player, truncate=20),
 #            'Map:     % 20s' % world.world.map_name,
+#world.world.get_map().name,
+#            'Map:     % 20s' % world.map.name,
+
             'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
             '',
             'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
@@ -521,6 +526,36 @@ class HUD(object):
                     break
                 vehicle_type = get_actor_display_name(vehicle, truncate=22)
                 self._info_text.append('% 4dm %s' % (d, vehicle_type))
+                
+                # **************Control de los semaforos**************
+#        if len(traffic_lights) > 1:
+#            traffic_lights = [(distance(x.get_location()), x) for x in traffic_lights if x.id != world.player.id]
+#            for d, traffic_light in sorted(traffic_lights):
+#                if d < 100 and traffic_light.get_state() == carla.TrafficLightState.Green:
+#                    print(traffic_light.id)
+#                    traffic_light.set_state(carla.TrafficLightState.Red)
+        #********************************************************
+#        for traffic_light in traffic_lights:
+#            trigger = traffic_light.trigger_volume
+#            traffic_light.get_transform().transform(trigger.location)
+#        
+#            # Calculate box intersection (rough approximation).
+#            distance_to_car = trigger.location.distance(vehicle.get_location())
+#            s = Util.length(trigger.extent) + Util.length(vehicle.bounding_box.extent)
+#            if distance_to_car <= s:
+#                traffic_light.set_state(carla.TrafficLightState.Red)
+                # the actor is affected by this traffic light.
+        #********************************************************
+#        if vehicle.is_at_traffic_light():
+#            tl = vehicle.get_traffic_light()
+#            for x in tl.get_group_traffic_lights():
+#                x.freeze()
+#                if x.get_pole_index() == tl.id:
+#                    state = carla.TrafficLightState.Green
+#                else:
+#                    state = carla.TrafficLightState.Red
+#                x.set_state(state)
+                
 
     def toggle_info(self):
         self._show_info = not self._show_info
@@ -732,6 +767,14 @@ class CameraManager(object):
         self._parent = parent_actor
         self._hud = hud
         self._recording = False
+        
+        # *************CÁMARA EN PRIMERA PERSONA **************
+#        self._camera_transforms = [
+#            carla.Transform(carla.Location(x=-0.35, z=1.1), carla.Rotation(pitch=-5)),
+#            carla.Transform(carla.Location(x=1, z=1.7))]
+        #******************************************************
+        
+        
         self._camera_transforms = [
             carla.Transform(carla.Location(x=-5.5, z=2.8), carla.Rotation(pitch=-15)),
             carla.Transform(carla.Location(x=1.6, z=1.7))]
@@ -837,9 +880,15 @@ def game_loop(args):
         client = carla.Client(args.host, args.port)
         client.set_timeout(2.0)
 
+#        display = pygame.display.set_mode(
+#            (args.width, args.height),
+#            pygame.HWSURFACE | pygame.DOUBLEBUF)
+        
+        # **********PANTALLA COMPLETA***************
         display = pygame.display.set_mode(
-            (args.width, args.height),
-            pygame.HWSURFACE | pygame.DOUBLEBUF)
+               (args.width, args.height),
+                pygame.FULLSCREEN)
+        #*******************************************
 
         hud = HUD(args.width, args.height)
         world = World(client.get_world(), hud, args.filter)
@@ -998,7 +1047,9 @@ A corregir:
     - Tratar de integrar el clutch-> problema desde pygame
     - Limitar la clase de autos que puedo generar para mi (no poli
     ni camiones) (CHECK)
-    - Comenzar en "primera persona"
+    - Comenzar en "primera persona" (CASI CHECK)
+    - Pantalla completa (CHECK)
+    
     
     Maybeee.....
     - Limitar los hud notification
